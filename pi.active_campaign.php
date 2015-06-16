@@ -23,7 +23,7 @@
 	###################
 
 	# Load ActiveCampaign API
-	require(PATH_THIRD."/ActiveCampaign/lib/vendor/autoload.php");
+	require(PATH_THIRD."/active_campaign/lib/vendor/autoload.php");
 
 	class Active_Campaign {
 
@@ -61,10 +61,10 @@
 			}
 			
 			# Otherwise, attempt to connect with AC
-			$ac_connect = new ActiveCampaign($this->api_url, $this->api_key);
+			$this->ac_connect = new ActiveCampaign($this->api_url, $this->api_key);
 
 			# Exception Check
-			if (!$ac_connect) {
+			if (!$this->ac_connect) {
 				return "Unable to connect with ActiveCampaign.";
 			}
 
@@ -77,21 +77,17 @@
 			}
 
 			# If XML is not valid, cannot continue.
-			if (!_xmlValidate($this->tag_data)) {
+			if (!$this->_xmlValidate($this->tag_data)) {
 				return "XML not validated.";
 			}
 
 			# If all is well, parse it
-			$member_xml = simplexml_load_file($this->tag_data);
+			$member_xml = simplexml_load_string($this->tag_data);
 
 			# Error check parse
 			if (!$member_xml || empty($member_xml)) {
 				$errors = libxml_get_errors();
-
-			    foreach ($errors as $error) {
-			        echo display_xml_error($error, $xml);
-			    }
-
+			    print_r($errors);
 			    libxml_clear_errors();
 			}
 
