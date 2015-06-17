@@ -1,4 +1,3 @@
-
 <?php if (!defined('BASEPATH')) ee()->output->fatal_error('No direct script access allowed');
 
 /**
@@ -96,7 +95,7 @@ class Active_Campaign {
 
 		# If XML is not valid, cannot continue.
 		if (!$this->_xmlValidate($this->tag_data)) {
-			echo "Problem Tag Data:<br>".$this->tag_data."<br>";
+			print "Problem Tag Data:<br>".$this->tag_data."<br>";
 			ee()->output->fatal_error("XML not validated.");
 		}
 
@@ -128,11 +127,11 @@ class Active_Campaign {
 
 		# Get the request parameter or throw an exception
 		$request = (ee()->TMPL->fetch_param('request')) ? ee()->TMPL->fetch_param('request') : null;
-		if (!isset($request)) { echo "Request parameter not found. Cannot continue."; return null; }
+		if (!isset($request)) { print "Request parameter not found. Cannot continue."; return null; }
 
 		# Get the data parameter.
 		$data = (ee()->TMPL->fetch_param('json')) ? ee()->TMPL->fetch_param('json') : null;
-		if (!isset($data)) { echo "JSON parameter not found. Cannot continue."; return null; }
+		if (!isset($data)) { print "JSON parameter not found. Cannot continue."; return null; }
 
 		# Begin iterating through XML generated children
 		foreach($this->parsed_xml->children() as $child) {
@@ -196,7 +195,7 @@ class Active_Campaign {
 					
 				} else {
 					// Request error.
-					echo "<br>Request did not succeed. Response error as follow:<br>".$response->error."<br>";
+					print "<br>Request did not succeed. Response error as follow:<br>".$response->error."<br>";
 				}
 				print "<br>Next Request<br><br>";
 			}
@@ -205,86 +204,6 @@ class Active_Campaign {
 			print "Request made: ";
 			if ((int)$response->success) { print "Response returned success!<br>"; }
 			else { print "Response returned failure. You may want to try using the debug parameter.<br>"; }
-		}
-	}
-
-	#################################################################
-
-	/**
-	*	Insert Contacts
-	*	Deprecated, but tested working
-	*	Use for basic needs
-	*/
-	public function insert_contacts() {
-
-		# Iterate through children
-		foreach($this->parsed_xml->children() as $child) {
-			# Generate JSON in the format AC wants
-			$user_json = '{
-				"email":"'.$child->email.'",
-				"first_name":"'.$child->fname.'",
-				"last_name":"'.$child->lname.'",
-				"field[%ADDRESS%,0]": "'.$child->primeaddress.'",
-				"field[%ADDRESS_2%,0]": "'.$child->auxaddress.'",
-				"field[%CITY%,0]": "'.$child->city.'",
-				"field[%DESCRIPTION%,0]": "'.$child->description.'",
-				"field[%FACEBOOK%,0]": "'.$child->facebook.'",
-				"field[%FIRST_NAME%,0]": "'.$child->fname.'",
-				"field[%LAST_NAME%,0]": "'.$child->lname.'",
-				"field[%LINKED_IN%,0]": "'.$child->linkedin.'",
-				"field[%STATE%,0]": "'.$child->state.'",
-				"field[%TWITTER%,0]": "'.$child->twitter.'",
-				"field[%WEBSITE%,0]": "'.$child->website.'",
-				"field[%ZIP%,0]": "'.$child->zip.'"
-			}';
-
-			# Decode it as user data
-			$user_data = get_object_vars(json_decode($user_json));
-
-			# Submit request and generate response
-			$response = $this->ac_connect->api("contact/add", $user_data);
-		}
-	}
-
-	#################################################################
-
-	public function add_contact_list($list = null) {
-
-		$list = (ee()->TMPL->fetch_param('list')) ? ee()->TMPL->fetch_param('list') : null;
-
-		if (!isset($list)) { die("List parameter not set. Please ensure you put 'list=[Your list]'"); }
-
-		# Iterate through children
-		foreach($this->parsed_xml->children() as $child) {
-			# Generate JSON in the format AC wants
-			$user_json = '{
-				"email": "'.$child->email.'",
-				"tags[0]": "MobileAL"
-			}';
-
-			# Decode it as user data
-			$user_data = get_object_vars(json_decode($user_json));
-
-			# Submit request and generate response
-			$response = $this->ac_connect->api("contact/tag/add", $user_data);
-
-			if ((int)$response->success) {
-				// Request succeeded. Generate items.
-				$items = array();
-				foreach($response as $key => $value) {
-					if (is_int($key)) {
-						$items[] = $value;
-					}
-				}
-
-				if (count($items) == 20) {
-					// Fetch next page
-				}
-				
-			} else {
-				// Request error.
-				echo $response->error;
-			}
 		}
 	}
 
