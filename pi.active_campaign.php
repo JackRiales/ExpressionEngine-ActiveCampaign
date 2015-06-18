@@ -13,7 +13,7 @@
 ### PLUGIN INFO ###
 $plugin_info = array(
 	'pi_name'		=>	'Active Campaign',
-	'pi_version'	=>	'1.0',
+	'pi_version'	=>	'1.1',
 	'pi_author'		=>	'Jack Riales',
 	'pi_author_url'	=>	'http://bluefishds.com/',
 	'pi_description'=>	'Takes input XML from a template and performs ActiveCampaign tasks using it.',
@@ -223,7 +223,8 @@ class Active_Campaign {
 		ob_start();
 		?>
 
-		This plugin takes ExpressionEngine pre-processed XML data and parses it into the Active Campaign API. For now, it only inserts contacts!
+		This plugin takes ExpressionEngine pre-processed XML data and parses it into the Active Campaign API.
+		As of this version, only POST api calls are useable.
 
 		=============================================
 
@@ -231,7 +232,7 @@ class Active_Campaign {
 
 		At the top of the XML area, before using channel entry tags, emplace
 
-			{exp:active_campaign:api_call 
+			{exp:active_campaign:api_call_input
 				url="Your Active Campaign URL" 
 				key="Your Key"
 				request="Your request (see bottom)"
@@ -282,7 +283,42 @@ class Active_Campaign {
 		"tags[0]": "ListToAddTo"
 		}'
 
+		Note that the amp (&) symbol seperates the different keys.
+
 		!!! The order of the tags in the json parameter MUST MATCH the order of tags in the XML.
+
+		**** RUNNING ****
+
+		The final template will look something similar to this:
+
+		{exp:active_campaign:api_call_input 
+		url="url" 
+		key="key" 
+		request="contact/add" 
+		json="email&first_name&last_name&field[%FIRST_NAME%,0]&field[%LAST_NAME%,0]&field[%CITY%,0]"}
+		<members>
+			{exp:channel:entries channel="People" dynamic="off"}
+			<member>
+				<email>{p_email}</email>
+			  	<fname>{fname}</fname>
+			  	<lname>{lname}</lname>
+			  	<field_fname>{fname}</field_fname>
+				<field_lname>{lname}</field_lname>
+				<city>{city}</city>
+			</member>
+			{/exp:channel:entries}
+		</members>
+		{/exp:active_campaign:api_call_input}
+
+		This is saying to perform contact/add using all the channel entries of channel "people" with the parameters first name, last name, and city.
+
+		Accessing the page is, in essence, running the program.
+
+		**** WARNING ****
+
+		Using this, you are responsible for any mass flooding you do to your ActiveCampaign system. PLEASE read their documentation and be careful of how you use this.
+
+		If you receive PHP warnings about modifying headers, be assured that this is normal. This is due to the fact that this script uses "print" before ExpressionEngine may attempt to display the page.
 
 		=============================================
 
